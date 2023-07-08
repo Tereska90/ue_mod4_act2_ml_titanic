@@ -5,6 +5,7 @@ Este proyecto permite ejecutar una app en local un modelo Random Forest que entr
 Para ejecutarlo:
 - Clonar el repositorio.
 – Instalar las dependencias en `requirements.txt` en un entorno virtual.
+- Cambia las credenciales del archivo `vcap-local.json` (he cambiado las credenciales por seguridad, por lo que necesitarás las tuyas).
 - Ejecutar `python3 run.py` en ese entorno virtual.
 
 Puedes probar a realizar nuevas inferencias sobre "nuevos datos" de pasajeros del Titanic para averiguar si habrían sobrevivido o no. El request a Postman debe tener esta forma:

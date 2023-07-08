@@ -6,27 +6,27 @@
         "label": "cloudantNoSQLDB",
         "plan": "Shared",
         "credentials": {
-          "apikey": "NSOLAMh7bfKxw2CdCn8dGRj5fSzCIg1jYgMZZPBxoUqI",
-          "host": "636bb14b-3139-490a-a1d3-bca194a101a4-bluemix.cloudantnosqldb.appdomain.cloud",
+          "apikey": "SSOLAMh7bfKxw2CdCn8dGRj5fSzCIg1jYgMZZPBxoUqI",
+          "host": "894bh37r-3139-490a-a1d3-bca194a101a4-bluemix.cloudantnosqldb.appdomain.cloud",
           "iam_apikey_description": "Auto-generated for key crn:v1:bluemix:public:cloudantnosqldb:eu-gb:a/3570441dc8884641aeeacf704214d3db:90d2d299-6c31-4ffe-9b90-a885b5a83338:resource-key:88687556-c397-4aec-84a9-03373470a053",
           "iam_apikey_name": "cred2",
           "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Manager",
           "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/3570441dc8884641aeeacf704214d3db::serviceid:ServiceId-0c741dc1-703b-4e88-8468-6c689ea007af",
-          "url": "https://636bb14b-3139-490a-a1d3-bca194a101a4-bluemix.cloudantnosqldb.appdomain.cloud",
-          "username": "636bb14b-3139-490a-a1d3-bca194a101a4-bluemix"
+          "url": "https://894bh37r-3139-490a-a1d3-bca194a101a4-bluemix.cloudantnosqldb.appdomain.cloud",
+          "username": "894bh37r-3139-490a-a1d3-bca194a101a4-bluemix"
         }
       }
     ],
     "cloud-object-storage": [
         {
             "credentials": {
-              "apikey": "mxpw9SSad_SWY4ERHgkzHw0_VPieu5E_dnYFaoNV4Wt8",
+              "apikey": "yxpw9SSad_SWY4ERHgkzHw0_VPieu5E_dnYFaoNV4Wt8",
               "endpoints": "https://s3.ap.cloud-object-storage.appdomain.cloud",
               "iam_apikey_description": "Auto-generated for key crn:v1:bluemix:public:cloud-object-storage:global:a/3570441dc8884641aeeacf704214d3db:d72610fc-1380-4f7a-ad20-dcb92c335941:resource-key:151ea245-cb15-47c2-8e1f-d3b8f00007d4",
               "iam_apikey_name": "cred_cos",
               "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Manager",
-              "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/3570441dc8884641aeeacf704214d3db::serviceid:ServiceId-483403f6-b731-4f71-9110-332e8f9d0f1e",
-              "resource_instance_id": "crn:v1:bluemix:public:cloud-object-storage:global:a/3570441dc8884641aeeacf704214d3db:d72610fc-1380-4f7a-ad20-dcb92c335941::"
+              "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/4789441dc8884641aeeacf704214d3db::serviceid:ServiceId-483403f6-b731-4f71-9110-332e8f9d0f1e",
+              "resource_instance_id": "crn:v1:bluemix:public:cloud-object-storage:global:a/4789441dc8884641aeeacf704214d3db:d72610fc-1380-4f7a-ad20-dcb92c335941::"
           },
             "syslog_drain_url": null,
             "volume_mounts": [],
