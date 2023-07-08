@@ -2,10 +2,10 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
-from ..features.feature_engineering import feature_engineering
-from app import cos
+from ..features.feature_engineering import feature_engineering, feature_engineering_inf
+from app import cos, init_cols
 
-
+# TRAIN
 def make_dataset(path, timestamp, target, cols_to_remove, model_type='RandomForest'):
 
     """
@@ -27,7 +27,7 @@ def make_dataset(path, timestamp, target, cols_to_remove, model_type='RandomFore
     print('---> Getting data')
     df = get_raw_data_from_local(path)
     print('---> Train / test split')
-    train_df, test_df = train_test_split(df, test_size=0.2, random_state=50)
+    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
     print('---> Transforming data')
     train_df, test_df = transform_data(train_df, test_df, timestamp, target, cols_to_remove)
     print('---> Feature engineering')
@@ -36,7 +36,6 @@ def make_dataset(path, timestamp, target, cols_to_remove, model_type='RandomFore
     train_df, test_df = pre_train_data_prep(train_df, test_df, model_type, timestamp, target)
 
     return train_df.copy(), test_df.copy()
-
 
 def get_raw_data_from_local(path):
 
@@ -230,4 +229,117 @@ def scale_data(train_df, test_df):
 
     return train_df.copy(), test_df.copy()
 
+# INFERENCE
+def extract_dataset(data, model_info, cols_to_remove, model_type='RandomForest'):
 
+    """
+        Función que permite crear el dataset usado para el entrenamiento
+        del modelo.
+
+        Args:
+           data (List):  Lista con la observación llegada por request.
+           model_info (dict):  Información del modelo en producción.
+
+        Kwargs:
+           model_type (str): tipo de modelo usado.
+
+        Returns:
+           DataFrame. Dataset a inferir.
+    """
+
+    print('---> Getting data')
+    data_df = get_raw_data_from_request(data)
+    print('---> Transforming data')
+    data_df = transform_input_data(data_df, model_info, cols_to_remove)
+    print('---> Feature engineering')
+    data_df = feature_engineering_inf(data_df)
+    print('---> Preparing data for training')
+    data_df = pre_train_input_data_prep(data_df, model_info)
+
+    return data_df.copy()
+
+def get_raw_data_from_request(data):
+
+    """
+        Función para obtener nuevas observaciones desde request
+
+        Args:
+           data (List):  Lista con la observación llegada por request.
+
+        Returns:
+           DataFrame. Dataset con los datos de entrada.
+    """
+    return pd.DataFrame(data, columns=init_cols)
+
+def transform_input_data(data_df, model_info, cols_to_remove):
+    """
+        Función que permite realizar las primeras tareas de transformación
+        de los datos de entrada.
+
+        Args:
+            data_df (DataFrame):  Dataset de entrada.
+            model_info (dict):  Información del modelo en producción.
+            cols_to_remove (list): Columnas a retirar.
+
+        Returns:
+           DataFrame. Dataset transformado.
+    """
+
+    print('------> Removing unnecessary columns')
+    data_df = remove_unwanted_columns(data_df, cols_to_remove)
+
+    data_df['Pclass'] = data_df['Pclass'].astype(str)
+
+    # creando dummies originales
+    print('------> Encoding data')
+    print('---------> Getting encoded columns from cos')
+    enc_key = model_info['objects']['encoders']+'.pkl'
+    # obteniendo las columnas presentes en el entrenamiento desde COS
+    enc_cols = cos.get_object_in_cos(enc_key)
+    # columnas dummies generadas en los datos de entrada
+    data_df = pd.get_dummies(data_df)
+
+    # agregando las columnas dummies faltantes en los datos de entrada
+    data_df = data_df.reindex(columns=enc_cols, fill_value=0)
+
+    return data_df.copy()
+
+def pre_train_input_data_prep(data_df, model_info):
+
+    """
+        Función que realiza las últimas transformaciones sobre los datos
+        antes del entrenamiento (imputación de nulos)
+
+        Args:
+            data_df (DataFrame):  Dataset de entrada.
+            model_info (dict):  Información del modelo en producción.
+
+        Returns:
+            DataFrame. Datasets de salida.
+    """
+
+    print('------> Getting imputer from cos')
+    imputer_key = model_info['objects']['imputer']+'.pkl'
+    data_df = input_missing_values_inf(data_df, imputer_key)
+
+    return data_df.copy()
+
+def input_missing_values_inf(data_df, key):
+
+    """
+        Función para la imputación de nulos
+
+        Args:
+            data_df (DataFrame):  Dataset de entrada.
+            key (str):  Nombre del objeto imputador en COS.
+
+        Returns:
+            DataFrame. Datasets de salida.
+    """
+
+    print('------> Inputing missing values')
+    # obtenemos el objeto SimpleImputer desde COS
+    imputer = cos.get_object_in_cos(key)
+    data_df = pd.DataFrame(imputer.transform(data_df), columns=data_df.columns)
+
+    return data_df.copy()

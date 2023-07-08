@@ -2,6 +2,7 @@ from ..data.make_dataset import make_dataset
 from ..evaluation.evaluate_model import evaluate_model
 from app import ROOT_DIR, cos, client
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
 from cloudant.query import Query
 import time
 
@@ -20,11 +21,14 @@ def training_pipeline(path, model_info_db_name='models-db'):
     """
 
     # Carga de la configuración de entrenamiento
-    model_config = load_model_config(model_info_db_name)['model_config']
+    db = client.get_database(model_info_db_name)
+    model_doc = db['model_config']
+
+    #model_config = load_model_config(model_info_db_name)['model_config']
     # variable dependiente a usar
-    target = model_config['target']
+    target = model_doc['model_config']['target']
     # columnas a retirar
-    cols_to_remove = model_config['cols_to_remove']
+    cols_to_remove = model_doc['model_config']['cols_to_remove']
 
     # timestamp usado para versionar el modelo y los objetos
     ts = time.time()
@@ -38,14 +42,33 @@ def training_pipeline(path, model_info_db_name='models-db'):
     y_test = test_df[target]
     X_test = test_df.drop(columns=[target]).copy()
 
+    # Grid search de los mejores parámetros
+    param_grid = {
+    "n_estimators": [50, 100, 200],
+    "max_features": [3, 5, 7, 9]
+    }
+    model = RandomForestClassifier()
+    grid_search = GridSearchCV(model, param_grid, cv=5)
+    grid_search.fit(X_train, y_train)
+
+    best_model = grid_search.best_estimator_
+    best_params = grid_search.best_params_
+
+    # Actualizar el documento model_config en Cloudant con los mejores parámetros
+    model_doc['model_config']["n_estimators"] = best_params["n_estimators"]
+    model_doc['model_config']["max_features"] = best_params["max_features"]
+
+    # Guardar el documento actualizado
+    model_doc.save()
+
     # definición del modelo (Random Forest)
-    model = RandomForestClassifier(n_estimators=model_config['n_estimators'],
-                                   max_features=model_config['max_features'],
-                                   random_state=50,
+    model = RandomForestClassifier(n_estimators=model_doc['model_config']['n_estimators'],
+                                   max_features=model_doc['model_config']['max_features'],
+                                   random_state=42,
                                    n_jobs=-1)
 
     print('---> Training a model with the following configuration:')
-    print(model_config)
+    print(model_doc['model_config'])
 
     # Ajuste del modelo con los datos de entrenamiento
     model.fit(X_train, y_train)
@@ -56,7 +79,7 @@ def training_pipeline(path, model_info_db_name='models-db'):
 
     # Evaluación del modelo y recolección de información relevante
     print('---> Evaluating the model')
-    metrics_dict = evaluate_model(model, X_test, y_test, ts, model_config['model_name'])
+    metrics_dict = evaluate_model(model, X_test, y_test, ts, model_doc['model_config']['model_name'])
 
     # Guardado de la info del modelo en BBDD documental
     print('------> Saving the model information on the cloud')
@@ -74,7 +97,7 @@ def training_pipeline(path, model_info_db_name='models-db'):
     put_best_model_in_production(metrics_dict, model_info_db_name)
 
 
-def save_model(obj, name, timestamp, bucket_name='models-uem'):
+def save_model(obj, name, timestamp, bucket_name='models-uem-tep'):
     """
         Función para guardar el modelo en IBM COS
 

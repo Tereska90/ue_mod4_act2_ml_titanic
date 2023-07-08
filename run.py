@@ -1,6 +1,6 @@
-from flask import Flask
+from flask import Flask, request
 import os
-from app.src.models import train_model
+from app.src.models import train_model, predict
 from app import ROOT_DIR
 import warnings
 
@@ -26,7 +26,7 @@ def root():
            dict.  Mensaje de salida
     """
     # No hacemos nada. Solo devolvemos info (customizable a voluntad)
-    return {'Proyecto':'Mod. 4 - Ciclo de vida de modelos IA'}
+    return {'Proyecto':'Mod. 4.2. - Ciclo de vida de modelos IA'}
 
 
 # ruta para el lanzar el pipeline de entranamiento (Método GET)
@@ -34,7 +34,6 @@ def root():
 def train_model_route():
     """
         Función de lanzamiento del pipeline de entrenamiento.
-
         Returns:
            dict.  Mensaje de salida
     """
@@ -47,6 +46,23 @@ def train_model_route():
     # Se puede devolver lo que queramos (mensaje de éxito en el entrenamiento, métricas, etc.)
     return {'TRAINING MODEL': 'Mod. 4 - Ciclo de vida de modelos IA'}
 
+# ruta para el lanzar el pipeline de inferencia (Método POST)
+@app.route("/predict", methods=["POST"])
+def predict_route():
+    """
+    Función de lanzamiento del pipeline de inferencia.
+
+    Returns:
+       dict.  Mensaje de salida (predicción)
+    """
+
+    # Obtener los datos pasados por el request
+    data = request.get_json()
+
+    # Lanzar la ejecución del pipeline de inferencia
+    y_pred = predict.predict_pipeline(data)
+
+    return {"Predicted value": y_pred}
 
 # main
 if __name__ == '__main__':

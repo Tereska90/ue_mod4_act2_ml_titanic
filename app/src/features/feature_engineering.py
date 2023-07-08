@@ -16,6 +16,21 @@ def feature_engineering(train_df, test_df):
 
     return train_df.copy(), test_df.copy()
 
+def feature_engineering_inf(data_df):
+
+    """
+        Función para encapsular la tarea de ingeniería de variables
+
+        Args:
+           data_df (DataFrame):  Dataset de entrada.
+
+        Returns:
+           DataFrame. Datasets de salida.
+    """
+
+    data_df = create_domain_knowledge_features(data_df)
+
+    return data_df.copy()
 
 def create_domain_knowledge_features(df):
     """
